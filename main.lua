@@ -42,7 +42,7 @@ function init_map(map_data)
                 object.s[1]=a
                 object.x[1]=x*16
                 object.y[1]=y*16
-                --object.d[1]       --no need to set this
+                --object.d[1]       --no need to set this................^
                 if a>=1 and a<=8
                     then
                     object.pol[1]=(1)
@@ -54,23 +54,24 @@ function init_map(map_data)
                 object.c[1]=get_spr(a):get(2,2)     --sprite_data:pget(x,y)....basically
                 map_data:set(x,y,floor)
             end
-            --[[ if a>=17 and a<=32   --player is setup here
+            if a>=17 and a<=32   -- +/- moving things are setup here
                 then                        --object={s={0},x={0},y={0},d={0},pol={0},c={0}}
-                object.s[#object.s+1]=a
-                object.x[#object.s+1]=x*16
-                object.y[#object.s+1]=y*16
-                --object.d[1]       --no need to set this
+                add(object.s,a)
+                add(object.x,x*16)
+                add(object.y,y*16)
+                add(object.d,0)
                 if a>=17 and a<=24
                     then
-                    object.pol[#object.s+1]=(1)
+                    add(object.pol,1)
                 end
                 if a>=25 and a<=32
                     then
-                    object.pol[#object.s+1]=(-1)
+                    add(object.pol,-1)
                 end
-                object.c[#object.s+1]=get_spr(a):get(2,2)     --sprite_data:pget(x,y)....basically
+                add(object.c,get_spr(a):get(2,2))
+                --sprite_data:pget(x,y)....basically
                 map_data:set(x,y,floor)
-            end ]]
+            end
         end
     end
     return map_data
@@ -85,14 +86,29 @@ function move_objects()
     if btnp(3) and moving==false then moving=true object.d[1]=3 end
     if moving==true
         then
-        if object.d[1]==0 then object.x[1]-=spd end
+        --[[ if object.d[1]==0 then object.x[1]-=spd end
         if object.d[1]==1 then object.x[1]+=spd end
         if object.d[1]==2 then object.y[1]-=spd end
-        if object.d[1]==3 then object.y[1]+=spd end
+        if object.d[1]==3 then object.y[1]+=spd end ]]
+        for i=1,#object.s do
+            if object.pol[i]==1
+                then
+                object.d[i]=object.d[1]
+            end
+            if object.pol[i]==(-1)
+                then
+                if object.d[1]==0 then object.d[i]=1 end
+                if object.d[1]==1 then object.d[i]=0 end
+                if object.d[1]==2 then object.d[i]=3 end
+                if object.d[1]==3 then object.d[i]=2 end
+            end
+            if object.d[i]==0 then object.x[i]-=spd end
+            if object.d[i]==1 then object.x[i]+=spd end
+            if object.d[i]==2 then object.y[i]-=spd end
+            if object.d[i]==3 then object.y[i]+=spd end
+        end
         moving_cnt+=spd
         if moving_cnt==16 then moving_cnt=0 moving=false end
-        --move_blocks
-        
     end
 end
 
@@ -110,10 +126,11 @@ test=0  --<<<<<<----------------------------------------------------------------
         --basics
         unpod("b64:bHo0AIEAAAAWAQAA-wl1c2VyZGF0YSgiaTE2Iiw4LDgsIjAwM2YEABATZAQAEjIEAGoxMjAwMjIgACMwMSAAmjkwMDI0MDAxYyAAAAQAZzFlMDAzNAQABCAAFmUEACIxMjwAJzIzIAATMxwAEzQIAFdlMDAyNSAAAGwAEjUcAAkEAB9mBAAKUDAzZiIp"),
         --testing
+        --[[pod_type="map"]]unpod("b64:bHo0AF8AAAAWAQAA-wl1c2VyZGF0YSgiaTE2Iiw4LDgsIjAwM2YEAA8vMTEEAAMFIABSYTAwMDIIAAgEAAUgAB8zBAADBSAAH2MEAAMFIAAfNQQAAwUgAB82BAAAFjggAA8EAARQMDNmIik="),
         unpod("b64:bHo0AIoAAAAWAQAA-w11c2VyZGF0YSgiaTE2Iiw4LDgsIjAwM2IwMDNmBAALojIyMDAzZDAwMzIEACMxMhQABCQAEmQQAAEUAJo5MDAyNDAwMWMgAAAEACMxZSQAEzQEAAQgABZlBAAEXAAnMjIgABMzHAATNAgAG2UgAABsABI1FAAbMkAALzIyFAADgDNmMDAzZiIp"),
         unpod("b64:bHo0AE0AAABWAAAA8yF1c2VyZGF0YSgiaTE2Iiw0LDQsIjAwMDEwMDMyMDAzOTAwMjQwMDNkMDAxZTAwMzQEABJlBABjMTIwMDFjDACwNDAwM2UwMDFlIik=")
     }
-    level=1
+    level=2
     clr={7,8,9,10,11,12,18,5}   --roygbv grey
     floor=62
     wall=63
@@ -127,6 +144,9 @@ function _draw()
     cls()
     map(maps[1])
     spr(object.s[1],object.x[1],object.y[1])
+    for i=1,#object.s do
+        spr(object.s[i],object.x[i],object.y[i])
+    end
     --print(mget(plyr.x>>4,plyr.y>>4),16,16)
     print(object.c[1],200,8,9)
     
